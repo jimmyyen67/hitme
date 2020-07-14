@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打地鼠遊戲</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+
+<body>
+  <div class="content">
+    <div class="row">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(0)">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(1)">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(2)">
+    </div>
+    <div class="row">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(3)">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(4)">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(5)">
+    </div>
+    <div class="row">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(6)">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(7)">
+      <img src="yellow.png" class="cell" title="Yellow" onclick="getCount(8)">
+    </div>
+    <div class="control">
+      <div class="message">
+        <span id="time">剩餘時間:0s</span>
+        <button>遊戲開始</button>
+        <span id="score">成績分數:0</span>
+      </div>
+      <hr>
+      <strong>遊戲說明</strong>
+      <p>按下遊戲開始之後，請利用電腦鍵盤數字1-9作為打地鼠動作，也支援手機畫面點選。(滿分100)</p>
+    </div>
+  </div>
+
+  <script>
+    // 初始化-作為全域變數
+    let btn = document.getElementsByTagName("button")[0];
+    btn.addEventListener("click", gamestart); //監聽點擊後觸發function
+
+    let time = document.getElementById("time"); //時間文字標籤
+    let score = document.getElementById("score"); //分數文字標籤
+    let sec = 0, count = 0; //紀錄數據的變化
+
+    let space = document.getElementsByClassName("cell");
+    let beY = new Array();
+
+    // 遊戲開始
+    function gamestart() {
+      btn.removeEventListener("click", gamestart); //暫時取消監聽
+      sec = 60, count = 0;
+      time.textContent = `剩餘時間:60s`;
+      score.textContent = `成績分數:0`;
+
+      // 遊戲的每秒變化
+      let timeRun = setInterval(() => {
+        if (sec == 0) {
+          clearInterval(timeRun); //秒數為零的時候
+          btn.addEventListener("click", gamestart); //恢復開始遊戲的監聽行為
+        } else {
+          sec--;
+          time.textContent = `剩餘時間:${sec}s`
+        }
+      }, 1000);
+
+      for (let i = 0; i < 100; i++) { //for迴圈圈內，每一次都是獨立的出場設定
+        let which = Math.floor(Math.random() * 9); //隨機9格位置(0-8)
+        let onTime = Math.floor(Math.random() * 55000); //隨機出現時間點 0-55000ms
+        let delay = Math.floor(Math.random() * 3) + 2 //出場停留時間 0-2s +2s
+
+        setTimeout(() => {
+          showIt(which, delay, i);
+        }, onTime);
+      }
+    }
+
+
+    function showIt(siWhich, siDelay, siId) {
+      if (space[siWhich].title != "Yellow") { //當該位置不是黃色
+        //要求更改位置或是時間
+        newWhich = (siWhich == 8) ? 0 : siWhich + 1;
+        // let newWhich = (siWhich + 1) % 9;
+        setTimeout(() => {
+          showIt(newWhich, siDelay, siId);
+        }, 100);
+      } else {
+        // 轉Red
+        space[siWhich].src = "red.png";
+        space[siWhich].style.background = "#e55039";
+        space[siWhich].title = "Red";
+        space[siWhich].alt = siId;
+        // Red轉回Yellow
+        beY[siId] = setTimeout(() => {
+          space[siWhich].src = "yellow.png";
+          space[siWhich].style.background = null;
+          space[siWhich].title = "Yellow";
+        }, siDelay * 1000);
+      }
+    }
+
+    document.onkeydown = kbCode; //每一次按鍵盤會執行kbCode;
+    function kbCode() {
+      // console.log(event.keyCode);
+      switch (event.keyCode) {
+        case 103:
+          getCount(0);
+          break;
+        case 104:
+          getCount(1);
+          break;
+        case 105:
+          getCount(2);
+          break;
+        case 100:
+          getCount(3);
+          break;
+        case 101:
+          getCount(4);
+          break;
+        case 102:
+          getCount(5);
+          break;
+        case 97:
+          getCount(6);
+          break;
+        case 98:
+          getCount(7);
+          break;
+        case 99:
+          getCount(8);
+          break;
+      }
+    }
+
+    function getCount(item) {
+      if (space[item].title == "Red") {
+        // 背景轉綠
+        space[item].src = "green.png";
+        space[item].style.background = "#20bf6b";
+        space[item].title = "Green";
+        // 得分
+        count++;
+        score.textContent = `成績分數:${count}`;
+
+        // Green 轉 Yellow
+        setTimeout(() => {
+          space[item].src = "yellow.png";
+          space[item].style.background = null;
+          space[item].title = "Yellow";
+        }, 500);
+
+        // 清除原先的Red轉Yellow
+        id = space[item].alt;
+        clearTimeout(beY[id]);
+      }
+    }
+  </script>
+</body>
+
+</html>
